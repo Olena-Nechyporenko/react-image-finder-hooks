@@ -1,6 +1,6 @@
 import css from './ImageGallery.module.css';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
-export function ImageGallery({ imagesArray }) {
+export const ImageGallery = ({ imagesArray }) => {
   return (
     <ul className={css.gallery}>
       {imagesArray.map(img => (
@@ -8,4 +8,4 @@ export function ImageGallery({ imagesArray }) {
       ))}
     </ul>
   );
-}
+};

@@ -1,5 +1,5 @@
 import css from './Button.module.css';
-export function Button({ onClick }) {
+export const Button = ({ onClick }) => {
   return (
     <div className={css.buttonWrapper}>
       <button
@@ -12,4 +12,4 @@ export function Button({ onClick }) {
       </button>
     </div>
   );
-}
+};

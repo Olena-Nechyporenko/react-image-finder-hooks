@@ -1,4 +1,4 @@
 import css from './Loader.module.css';
-export function Loader() {
+export const Loader = () => {
   return <span className={css.loader}></span>;
-}
+};

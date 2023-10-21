@@ -1,33 +1,29 @@
 import toast, { Toaster } from 'react-hot-toast';
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { SearchBar } from './SearchBar/SearchBar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { requestImages } from './api';
 
-export class App extends Component {
-  state = {
-    keyword: '',
-    images: [],
-    loading: false,
-    error: false,
-    page: 1,
-    totalPages: 1,
-  };
+export const App = () => {
+  const [keyword, setKeyword] = useState('');
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.keyword !== this.state.keyword ||
-      prevState.page !== this.state.page
-    ) {
-      this.setState({ loading: true, error: false });
+  useEffect(() => {
+    if (keyword === '') {
+      return;
+    }
+    async function getImages() {
       try {
+        setLoading(true);
+        setError(false);
         // запит на бекенд
-        const response = await requestImages(
-          this.state.keyword,
-          this.state.page
-        );
+        const response = await requestImages(keyword, page);
         if (response.hits.length === 0) {
           return toast.error(
             'Sorry, there are no images matching your search query. Please try again'
@@ -35,42 +31,36 @@ export class App extends Component {
         }
         toast.success(`We  have found images`);
         const pages = Math.ceil(response.totalHits / 12);
-        this.setState(prevState => {
-          return {
-            images: [...prevState.images, ...response.hits],
-            loadMore: true,
-            totalPages: pages,
-          };
-        });
+        setImages(prevState => [...prevState, ...response.hits]);
+        setTotalPages(pages);
       } catch (error) {
-        this.setState({ error: true });
+        setError(true);
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     }
-  }
-  handleSubmit = inputValue => {
-    this.setState({ keyword: inputValue, page: 1, images: [] });
+    getImages();
+  }, [keyword, page]);
+
+  const handleSubmit = inputValue => {
+    setKeyword(inputValue);
+    setPage(1);
+    setImages([]);
   };
-  loadMore = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
+  const loadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const { images, error, loading, page, totalPages } = this.state;
-    return (
-      <>
-        <SearchBar onSubmit={this.handleSubmit} />
-        {error && <span className="errorMessage">Something went wrong!</span>}
-        <ImageGallery imagesArray={images} onClick={this.openModal} />
-        {loading && <Loader />}
-        {images.length > 0 && page !== totalPages && (
-          <Button onClick={this.loadMore} />
-        )}
-        <Toaster position="top-right" />
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <SearchBar onSubmit={handleSubmit} />
+      {error && <span className="errorMessage">Something went wrong!</span>}
+      <ImageGallery imagesArray={images} />
+      {loading && <Loader />}
+      {images.length > 0 && page !== totalPages && (
+        <Button onClick={loadMore} />
+      )}
+      <Toaster position="top-right" />
+    </>
+  );
+};
